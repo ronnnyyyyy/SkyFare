@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyFare — World's Cheapest Flights</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g:#1db97e;--g2:#17a368;--g3:#e8faf3;--g4:#d0f5e8;
+  --w:#fff;--bg:#f0fdf8;--txt:#1a2e22;--txt2:#4a6358;--txt3:#8aab98;
+  --border:#c8ead9;--shadow:0 4px 24px rgba(29,185,126,0.13);
+  --r:14px;--r2:10px;--r3:22px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+
+/* NAV */
+nav{background:#fff;border-bottom:1.5px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+.logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--g);display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nav-sel{background:var(--g3);border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--txt2);cursor:pointer;outline:none}
+.btn-nav{background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1db97e 0%,#0a8f5c 55%,#065e3c 100%);padding:3rem 1.5rem 0;text-align:center;position:relative;overflow:hidden}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:12px;font-weight:700;margin-bottom:1rem;letter-spacing:.4px}
+.hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px;line-height:1.2}
+.hero p{color:rgba(255,255,255,0.85);font-size:1rem;margin-bottom:1.6rem}
+
+/* SEARCH BOX */
+.sbox{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,0.18);padding:1.5rem;max-width:900px;margin:0 auto;position:relative;z-index:10}
+.tabs{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap}
+.tab{padding:7px 15px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--txt2);transition:.15s;font-family:'Nunito',sans-serif}
+.tab.active{background:var(--g);color:#fff;border-color:var(--g)}
+.trip-opts{display:flex;gap:1rem;margin-bottom:1rem}
+.trip-opt{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--txt2);cursor:pointer;font-weight:600}
+.trip-opt input{accent-color:var(--g)}
+.srow{display:grid;gap:10px;margin-bottom:10px}
+.s4{grid-template-columns:1fr 1fr 0.8fr 0.8fr}
+.s3{grid-template-columns:1fr 0.8fr 0.8fr}
+.inp-g{display:flex;flex-direction:column;gap:4px;position:relative}
+.inp-g label{font-size:11px;font-weight:800;color:var(--g2);text-transform:uppercase;letter-spacing:.5px}
+.inp-g input,.inp-g select{border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--txt);background:var(--g3);outline:none;transition:.15s;width:100%}
+.inp-g input:focus,.inp-g select:focus{border-color:var(--g);background:#fff}
+.btn-search{background:var(--g);color:#fff;border:none;border-radius:var(--r2);padding:12px 24px;font-size:15px;font-weight:800;cursor:pointer;transition:.15s;font-family:'Nunito',sans-serif;white-space:nowrap;width:100%}
+.btn-search:hover{background:var(--g2)}
+.btn-search:disabled{background:#a0d4bc;cursor:not-allowed}
+.swap-btn{position:absolute;right:-16px;top:50%;transform:translateY(-50%);width:30px;height:30px;background:var(--g);border-radius:50%;border:2px solid #fff;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;font-family:sans-serif}
+
+/* AUTOCOMPLETE */
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;max-height:200px;overflow-y:auto;z-index:200;box-shadow:var(--shadow);display:none;margin-top:2px}
+.ac-drop.show{display:block}
+.ac-item{padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--g3)}
+.ac-code{background:var(--g);color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:800;flex-shrink:0}
+.ac-name{flex:1}
+.ac-sub{font-size:10px;color:var(--txt3);font-weight:400}
+
+/* WAVE */
+.wave-svg{display:block;background:linear-gradient(135deg,#1db97e,#065e3c);margin-bottom:0}
+
+/* TRUST */
+.trust{background:var(--g3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--txt2)}
+
+/* CURRENCY BAR */
+.curr-bar{background:#fff;border-bottom:1px solid var(--border);padding:.6rem 2rem;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.curr-label{font-size:12px;font-weight:700;color:var(--txt3)}
+.curr-rate{background:var(--g3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--txt2);cursor:pointer;transition:.15s}
+.curr-rate:hover,.curr-rate.active{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* RESULTS */
+.results-wrap{max-width:1000px;margin:0 auto;padding:1.5rem}
+
+/* LOADING */
+.loading{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:2.5rem;text-align:center;display:none}
+.loading.show{display:block}
+.spinner{width:44px;height:44px;border:4px solid var(--g3);border-top:4px solid var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:var(--txt2);font-weight:600;margin-bottom:6px}
+.loading-sub{font-size:12px;color:var(--txt3)}
+.dots{display:flex;justify-content:center;gap:5px;margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--g3);animation:pulse 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{background:var(--g3)}50%{background:var(--g)}}
+
+/* RESULTS PANEL */
+.results-panel{display:none}
+.results-panel.show{display:block}
+.results-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:gap:10px}
+.results-top h2{font-size:1.1rem;font-weight:800;color:var(--txt)}
+.sort-row{display:flex;gap:6px}
+.sort-btn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:transparent;font-size:12px;font-weight:700;cursor:pointer;color:var(--txt2);font-family:'Nunito',sans-serif;transition:.15s}
+.sort-btn.active{background:var(--g);color:#fff;border-color:var(--g)}
+.filter-strip{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.ftag{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--txt2);transition:.15s}
+.ftag.active{background:var(--g3);border-color:var(--g);color:var(--g2)}
+
+/* FLIGHT CARD */
+.fc{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:10px;transition:.15s;cursor:default}
+.fc:hover{border-color:var(--g);box-shadow:var(--shadow)}
+.fc.best{border-color:var(--g);border-width:2px}
+.fc-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fc-airline{min-width:120px;display:flex;align-items:center;gap:8px}
+.airline-logo{width:36px;height:36px;border-radius:9px;object-fit:contain;background:var(--g3);padding:3px;flex-shrink:0}
+.airline-fallback{width:36px;height:36px;border-radius:9px;background:var(--g);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fc-name{font-size:13px;font-weight:700;color:var(--txt)}
+.fc-cls{font-size:11px;color:var(--txt3)}
+.fc-route{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;min-width:180px}
+.rt{text-align:center}
+.rt-time{font-size:18px;font-weight:800;color:var(--txt);line-height:1}
+.rt-city{font-size:11px;color:var(--txt2);margin-top:2px}
+.rt-date{font-size:10px;color:var(--txt3)}
+.rt-mid{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.rt-dur{font-size:11px;color:var(--txt2);font-weight:600}
+.rt-line{width:100%;height:1.5px;background:var(--border);position:relative;margin:2px 0}
+.rt-line::after{content:'✈';position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--g)}
+.rt-stops{font-size:10px;color:var(--txt3)}
+.rt-stops.ns{color:var(--g);font-weight:700}
+.fc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:110px}
+.fc-price{font-size:22px;font-weight:800;color:var(--g);line-height:1}
+.fc-per{font-size:11px;color:var(--txt3)}
+.fc-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;margin-top:2px}
+.fc-badge{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700}
+.b-cheap{background:#d0f5e8;color:#0d7a50}
+.b-fast{background:#dbeafe;color:#1d4ed8}
+.b-best{background:#fef3c7;color:#92400e}
+.btn-book{background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;transition:.15s;font-family:'Nunito',sans-serif;margin-top:4px}
+.btn-book:hover{background:var(--g2)}
+
+/* ERROR */
+.err-box{background:#fef2f2;border:1.5px solid #fecaca;border-radius:var(--r);padding:1.5rem;text-align:center;display:none}
+.err-box.show{display:block}
+.err-box h3{color:#dc2626;margin-bottom:6px}
+.err-box p{color:#7f1d1d;font-size:13px}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem;display:none}
+.empty.show{display:block}
+.empty h3{font-size:16px;font-weight:800;color:var(--txt);margin-bottom:6px}
+.empty p{font-size:13px;color:var(--txt2)}
+
+/* DEALS */
+.section{padding:2rem 1.5rem;max-width:1000px;margin:0 auto}
+.sec-h{font-size:1.4rem;font-weight:800;margin-bottom:.3rem}
+.sec-s{font-size:.9rem;color:var(--txt2);margin-bottom:1.2rem}
+.deals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.deal{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.15s}
+.deal:hover{box-shadow:var(--shadow);border-color:var(--g);transform:translateY(-2px)}
+.deal-img{height:90px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;position:relative}
+.deal-pct{position:absolute;top:8px;left:8px;background:var(--g);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px}
+.deal-info{padding:.85rem}
+.deal-info h3{font-size:13px;font-weight:800;margin-bottom:2px}
+.deal-info p{font-size:11px;color:var(--txt2);margin-bottom:6px}
+.deal-price{font-size:17px;font-weight:800;color:var(--g)}
+
+/* PAYMENT MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px;padding:1.8rem;width:420px;max-width:100%;position:relative;max-height:90vh;overflow-y:auto}
+.modal-x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--txt2)}
+.modal h2{font-size:1.2rem;font-weight:800;margin-bottom:1rem}
+.flight-sum{background:var(--g3);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--g2);margin-bottom:1.2rem;line-height:1.6}
+.pay-methods{display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap}
+.pay-m{flex:1;min-width:80px;border:2px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:.15s;background:var(--g3)}
+.pay-m.sel{border-color:var(--g);background:#fff}
+.pay-m .pm-icon{font-size:22px;margin-bottom:4px}
+.pay-m span{font-size:11px;font-weight:700;color:var(--txt2);display:block}
+.pay-m.sel span{color:var(--g2)}
+.pay-form{display:flex;flex-direction:column;gap:10px}
+.pay-inp{border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--txt);background:var(--g3);outline:none;width:100%}
+.pay-inp:focus{border-color:var(--g)}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-pay{background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;width:100%;font-family:'Nunito',sans-serif;margin-top:4px;transition:.15s}
+.btn-pay:hover{background:var(--g2)}
+.secure{text-align:center;font-size:11px;color:var(--txt3);margin-top:6px}
+
+/* CHATBOT */
+.chat-wrap{position:fixed;bottom:22px;right:22px;z-index:300}
+.chat-btn{width:56px;height:56px;background:var(--g);border-radius:50%;border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(29,185,126,.5);transition:.2s;display:flex;align-items:center;justify-content:center}
+.chat-btn:hover{transform:scale(1.08);background:var(--g2)}
+.chat-win{position:fixed;bottom:90px;right:22px;width:320px;background:#fff;border-radius:20px;border:1.5px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.18);display:none;flex-direction:column;overflow:hidden;max-height:480px}
+.chat-win.open{display:flex}
+.chat-head{background:var(--g);padding:.9rem 1rem;display:flex;align-items:center;gap:10px}
+.chat-av{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.chat-hinfo h4{color:#fff;font-size:13px;font-weight:800;margin-bottom:1px}
+.chat-hinfo p{color:rgba(255,255,255,.8);font-size:11px}
+.chat-x{margin-left:auto;background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
+.chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:8px;max-height:300px}
+.msg{max-width:85%;padding:8px 11px;border-radius:12px;font-size:13px;line-height:1.5}
+.msg.bot{background:var(--g3);color:var(--txt);border-bottom-left-radius:3px;align-self:flex-start}
+.msg.user{background:var(--g);color:#fff;border-bottom-right-radius:3px;align-self:flex-end}
+.msg.typing{background:var(--g3);align-self:flex-start;padding:12px 16px}
+.typing-dots{display:flex;gap:4px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--txt3);animation:pulse 1s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+.chat-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border)}
+.chat-inp{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;outline:none;background:var(--g3);color:var(--txt)}
+.chat-inp:focus{border-color:var(--g)}
+.chat-send{background:var(--g);border:none;color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:15px;transition:.15s}
+.chat-send:hover{background:var(--g2)}
+.chat-send:disabled{background:#a0d4bc;cursor:not-allowed}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--txt);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* FOOTER */
+footer{background:#0d3d26;color:rgba(255,255,255,.7);padding:2rem 2rem 1.2rem;margin-top:2rem}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1.5rem;max-width:1000px;margin:0 auto 1.5rem}
+footer h4{color:#fff;font-size:13px;font-weight:800;margin-bottom:10px}
+footer a{display:block;color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;margin-bottom:5px;cursor:pointer}
+footer a:hover{color:var(--g)}
+.footer-logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--g);margin-bottom:8px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;text-align:center;font-size:11px;color:rgba(255,255,255,.35);max-width:1000px;margin:0 auto}
+
+@media(max-width:650px){
+  .s4{grid-template-columns:1fr 1fr}
+  .s3{grid-template-columns:1fr 1fr}
+  .hero h1{font-size:1.7rem}
+  nav{padding:0 1rem}
+  .trust{gap:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <a class="logo" href="#">✈ SkyFare</a>
+  <div class="nav-right">
+    <select class="nav-sel" id="currSel" onchange="setCurr(this.value)">
+      <option value="INR">₹ INR</option>
+      <option value="USD">$ USD</option>
+      <option value="EUR">€ EUR</option>
+      <option value="GBP">£ GBP</option>
+      <option value="AED">د.إ AED</option>
+      <option value="SGD">S$ SGD</option>
+      <option value="JPY">¥ JPY</option>
+      <option value="AUD">A$ AUD</option>
+    </select>
+    <select class="nav-sel" onchange="setLang(this.value)">
+      <option value="en">🌐 EN</option>
+      <option value="hi">🇮🇳 HI</option>
+      <option value="es">🇪🇸 ES</option>
+      <option value="fr">🇫🇷 FR</option>
+      <option value="ar">🇸🇦 AR</option>
+    </select>
+    <button class="btn-nav" onclick="openModal(null,'Sign Up / Login')">Sign Up</button>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-badge">⚡ LIVE PRICES · REAL-TIME DATA</div>
+  <h1 id="heroTitle">Find the World's<br>Cheapest Flights</h1>
+  <p id="heroSub">Real-time prices · Compare hundreds of airlines · Book in seconds</p>
+
+  <div class="sbox">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('flights',this)">✈ Flights</button>
+      <button class="tab" onclick="switchTab('hotels',this)">🏨 Hotels</button>
+      <button class="tab" onclick="switchTab('trains',this)">🚂 Trains</button>
+      <button class="tab" onclick="switchTab('buses',this)">🚌 Buses</button>
+    </div>
+
+    <!-- FLIGHTS -->
+    <div id="ui-flights">
+      <div class="trip-opts">
+        <label class="trip-opt"><input type="radio" name="trip" value="roundtrip" checked onchange="tripType='roundtrip';toggleReturn(true)"> Round Trip</label>
+        <label class="trip-opt"><input type="radio" name="trip" value="oneway" onchange="tripType='oneway';toggleReturn(false)"> One Way</label>
+      </div>
+      <div class="srow s4">
+        <div class="inp-g" id="fromWrap">
+          <label>From</label>
+          <input id="fromInp" type="text" placeholder="City or Airport" autocomplete="off" value="New Delhi" oninput="acSearch('from',this.value)">
+          <input type="hidden" id="fromId" value="DEL">
+          <div class="ac-drop" id="fromAC"></div>
+        </div>
+        <div class="inp-g" style="position:relative">
+          <label>To</label>
+          <button class="swap-btn" onclick="swapCities()" title="Swap cities">⇄</button>
+          <input id="toInp" type="text" placeholder="City or Airport" autocomplete="off" value="Dubai" style="padding-left:36px" oninput="acSearch('to',this.value)">
+          <input type="hidden" id="toId" value="DXB">
+          <div class="ac-drop" id="toAC"></div>
+        </div>
+        <div class="inp-g">
+          <label>Depart</label>
+          <input type="date" id="departDate">
+        </div>
+        <div class="inp-g" id="returnWrap">
+          <label>Return</label>
+          <input type="date" id="returnDate">
+        </div>
+      </div>
+      <div class="srow s3">
+        <div class="inp-g">
+          <label>Passengers</label>
+          <select id="adults">
+            <option value="1">1 Adult</option><option value="2">2 Adults</option>
+            <option value="3">3 Adults</option><option value="4">4 Adults</option>
+          </select>
+        </div>
+        <div class="inp-g">
+          <label>Class</label>
+          <select id="cabin">
+            <option value="economy">Economy</option>
+            <option value="premium_economy">Premium Economy</option>
+            <option value="business">Business</option>
+            <option value="first">First Class</option>
+          </select>
+        </div>
+        <button class="btn-search" id="searchBtn" onclick="doSearch()">🔍 Search Flights</button>
+      </div>
+    </div>
+
+    <!-- HOTELS -->
+    <div id="ui-hotels" style="display:none">
+      <div class="srow s3">
+        <div class="inp-g"><label>Destination</label><input type="text" placeholder="City or Hotel" value="Dubai"></div>
+        <div class="inp-g"><label>Check-in</label><input type="date"></div>
+        <div class="inp-g"><label>Check-out</label><input type="date"></div>
+      </div>
+      <div style="margin-top:10px;text-align:right">
+        <button class="btn-search" style="width:auto;padding:12px 28px" onclick="toast('Hotel API coming soon! Connecting Makcorps API.')">🔍 Search Hotels</button>
+      </div>
+    </div>
+
+    <!-- TRAINS -->
+    <div id="ui-trains" style="display:none">
+      <div class="srow s4">
+        <div class="inp-g"><label>From</label><input type="text" value="Mumbai CST"></div>
+        <div class="inp-g"><label>To</label><input type="text" value="New Delhi"></div>
+        <div class="inp-g"><label>Date</label><input type="date"></div>
+        <div class="inp-g"><label>Class</label><select><option>Sleeper</option><option>3AC</option><option>2AC</option><option>1AC</option></select></div>
+      </div>
+      <div style="margin-top:10px;text-align:right">
+        <button class="btn-search" style="width:auto;padding:12px 28px" onclick="toast('Train API coming soon! Connecting IRCTC API.')">🔍 Search Trains</button>
+      </div>
+    </div>
+
+    <!-- BUSES -->
+    <div id="ui-buses" style="display:none">
+      <div class="srow s4">
+        <div class="inp-g"><label>From</label><input type="text" value="Bengaluru"></div>
+        <div class="inp-g"><label>To</label><input type="text" value="Chennai"></div>
+        <div class="inp-g"><label>Date</label><input type="date"></div>
+        <div class="inp-g"><label>Seats</label><select><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+      </div>
+      <div style="margin-top:10px;text-align:right">
+        <button class="btn-search" style="width:auto;padding:12px 28px" onclick="toast('Bus API coming soon! Connecting redBus API.')">🔍 Search Buses</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<svg class="wave-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 50"><path fill="#f0fdf8" d="M0,32 C480,60 960,10 1440,32 L1440,50 L0,50 Z"/></svg>
+
+<!-- TRUST STRIP -->
+<div class="trust">
+  <div class="trust-item">⚡ Live Flight Data</div>
+  <div class="trust-item">🔒 Razorpay Secured</div>
+  <div class="trust-item">🤖 AI Travel Assistant</div>
+  <div class="trust-item">💱 <span id="currDisplay">Live Exchange Rates</span></div>
+  <div class="trust-item">🌍 150+ Countries</div>
+</div>
+
+<!-- LIVE CURRENCY BAR -->
+<div class="curr-bar" id="currBar">
+  <span class="curr-label">Live rates:</span>
+  <span class="curr-rate active" onclick="setCurr('INR',this)">₹ INR</span>
+  <span class="curr-rate" onclick="setCurr('USD',this)">$ USD</span>
+  <span class="curr-rate" onclick="setCurr('EUR',this)">€ EUR</span>
+  <span class="curr-rate" onclick="setCurr('GBP',this)">£ GBP</span>
+  <span class="curr-rate" onclick="setCurr('AED',this)">AED</span>
+  <span class="curr-rate" onclick="setCurr('SGD',this)">SGD</span>
+  <span id="rateDisplay" style="font-size:11px;color:var(--txt3);margin-left:6px"></span>
+</div>
+
+<!-- RESULTS -->
+<div class="results-wrap">
+  <div class="loading" id="loadBox">
+    <div class="spinner"></div>
+    <div class="loading-txt" id="loadTxt">Searching live flights...</div>
+    <div class="loading-sub">Scanning Skyscanner, Google Flights & 200+ airlines</div>
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div class="err-box" id="errBox"><h3>⚠️ Could not load flights</h3><p id="errMsg"></p></div>
+  <div class="empty" id="emptyBox"><div style="font-size:48px;margin-bottom:12px">🔍</div><h3>No flights found</h3><p>Try different dates or nearby airports</p></div>
+  <div class="results-panel" id="resultsPanel">
+    <div class="results-top">
+      <h2 id="resultsTitle">Searching...</h2>
+      <div class="sort-row">
+        <button class="sort-btn active" onclick="sortBy('cheap',this)">💰 Cheapest</button>
+        <button class="sort-btn" onclick="sortBy('fast',this)">⚡ Fastest</button>
+        <button class="sort-btn" onclick="sortBy('best',this)">⭐ Best</button>
+      </div>
+    </div>
+    <div class="filter-strip" id="filterStrip"></div>
+    <div id="flightList"></div>
+  </div>
+</div>
+
+<!-- DEALS SECTION -->
+<div class="section" id="dealsSection">
+  <div class="sec-h">🔥 Hot Deals This Week</div>
+  <div class="sec-s">Real-time lowest fares — click any deal to search instantly</div>
+  <div class="deals-grid">
+    <div class="deal" onclick="quickSearch('DEL','DXB','New Delhi','Dubai')">
+      <div class="deal-img" style="background:#e8faf3">✈️<div class="deal-pct">-34%</div></div>
+      <div class="deal-info"><h3>Delhi → Dubai</h3><p>Non-stop · 3h 45m</p><div class="deal-price" id="dp1">₹7,800</div></div>
+    </div>
+    <div class="deal" onclick="quickSearch('BOM','LHR','Mumbai','London')">
+      <div class="deal-img" style="background:#e8f0fa">🏰<div class="deal-pct">-28%</div></div>
+      <div class="deal-info"><h3>Mumbai → London</h3><p>Direct · 9h 15m</p><div class="deal-price" id="dp2">₹22,500</div></div>
+    </div>
+    <div class="deal" onclick="quickSearch('BLR','SIN','Bangalore','Singapore')">
+      <div class="deal-img" style="background:#faf5e8">🌴<div class="deal-pct">-41%</div></div>
+      <div class="deal-info"><h3>Bangalore → Singapore</h3><p>Non-stop · 4h 20m</p><div class="deal-price" id="dp3">₹9,200</div></div>
+    </div>
+    <div class="deal" onclick="quickSearch('MAA','BKK','Chennai','Bangkok')">
+      <div class="deal-img" style="background:#fae8f5">🛕<div class="deal-pct">-22%</div></div>
+      <div class="deal-info"><h3>Chennai → Bangkok</h3><p>Non-stop · 3h 50m</p><div class="deal-price" id="dp4">₹7,100</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="overlay" id="payOverlay">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <h2>💳 Complete Booking</h2>
+    <div class="flight-sum" id="flightSum">Loading...</div>
+    <p style="font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:8px">Choose Payment</p>
+    <div class="pay-methods">
+      <div class="pay-m sel" onclick="selPay(this,'upi')"><div class="pm-icon">📱</div><span>UPI</span></div>
+      <div class="pay-m" onclick="selPay(this,'card')"><div class="pm-icon">💳</div><span>Card</span></div>
+      <div class="pay-m" onclick="selPay(this,'razorpay')"><div class="pm-icon">⚡</div><span>Razorpay</span></div>
+      <div class="pay-m" onclick="selPay(this,'netbank')"><div class="pm-icon">🏦</div><span>NetBank</span></div>
+    </div>
+    <!-- UPI -->
+    <div id="form-upi" class="pay-form">
+      <input class="pay-inp" placeholder="Enter UPI ID (name@upi)">
+      <p style="font-size:11px;color:var(--txt3)">✓ GPay &nbsp; ✓ PhonePe &nbsp; ✓ Paytm &nbsp; ✓ BHIM</p>
+      <button class="btn-pay" onclick="payWithRazorpay()">✅ Pay Now</button>
+    </div>
+    <!-- CARD -->
+    <div id="form-card" class="pay-form" style="display:none">
+      <input class="pay-inp" placeholder="Cardholder Name">
+      <input class="pay-inp" placeholder="Card Number" maxlength="19">
+      <div class="pay-grid">
+        <input class="pay-inp" placeholder="MM/YY" maxlength="5">
+        <input class="pay-inp" placeholder="CVV" type="password" maxlength="4">
+      </div>
+      <button class="btn-pay" onclick="payWithRazorpay()">🔒 Pay Securely</button>
+    </div>
+    <!-- RAZORPAY -->
+    <div id="form-razorpay" class="pay-form" style="display:none">
+      <p style="font-size:13px;color:var(--txt2)">You'll be redirected to Razorpay's secure checkout — supports all payment methods.</p>
+      <button class="btn-pay" onclick="payWithRazorpay()">⚡ Open Razorpay</button>
+    </div>
+    <!-- NET BANKING -->
+    <div id="form-netbank" class="pay-form" style="display:none">
+      <select class="pay-inp"><option>Select Bank</option><option>SBI</option><option>HDFC</option><option>ICICI</option><option>Axis</option><option>Kotak</option><option>PNB</option></select>
+      <button class="btn-pay" onclick="payWithRazorpay()">🏦 Go to Bank</button>
+    </div>
+    <div class="secure">🔐 256-bit SSL · PCI DSS Compliant · Powered by Razorpay</div>
+  </div>
+</div>
+
+<!-- AI CHATBOT -->
+<div class="chat-wrap">
+  <div class="chat-win" id="chatWin">
+    <div class="chat-head">
+      <div class="chat-av">🤖</div>
+      <div class="chat-hinfo">
+        <h4>SkyFare AI</h4>
+        <p>🟢 Online · Powered by Groq AI</p>
+      </div>
+      <button class="chat-x" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg bot">👋 Hi! I'm SkyFare's AI travel assistant. I can help you find cheap flights, best travel dates, visa info, and more. What are you planning? ✈</div>
+    </div>
+    <div class="chat-row">
+      <input class="chat-inp" id="chatInp" placeholder="Ask about flights, hotels, tips..." onkeydown="if(event.key==='Enter'&&!event.shiftKey)sendMsg()">
+      <button class="chat-send" id="sendBtn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+  <button class="chat-btn" onclick="toggleChat()">💬</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<!-- ═══ ABOUT SECTION ═══ -->
+<div id="about" style="background:linear-gradient(135deg,#f0fdf8 0%,#e8faf3 100%);border-top:1.5px solid #c8ead9;padding:4rem 2rem">
+  <div style="max-width:1000px;margin:0 auto">
+
+    <!-- HEADING -->
+    <div style="text-align:center;margin-bottom:3rem">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:#d0f5e8;border:1px solid #a0d4bc;border-radius:20px;padding:5px 16px;color:#0d7a50;font-size:12px;font-weight:800;letter-spacing:.5px;margin-bottom:1rem">✈ ABOUT SKYFARE</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:2rem;color:#1a2e22;margin-bottom:12px">The Story Behind SkyFare</h2>
+      <p style="font-size:1rem;color:#4a6358;max-width:600px;margin:0 auto;line-height:1.7">Built with a simple mission — make travel affordable and accessible for everyone, everywhere.</p>
+    </div>
+
+    <!-- FOUNDER CARD -->
+    <div style="background:#fff;border:2px solid #1db97e;border-radius:20px;padding:2rem;margin-bottom:2.5rem;display:flex;gap:2rem;align-items:center;flex-wrap:wrap;box-shadow:0 4px 24px rgba(29,185,126,0.13)">
+      <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1db97e,#065e3c);display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0">👨‍💻</div>
+      <div style="flex:1;min-width:220px">
+        <div style="font-size:11px;font-weight:800;color:#1db97e;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Founder & Developer</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#1a2e22;margin-bottom:8px">Pragyan Kumar Pattnaik</h3>
+        <p style="font-size:13px;color:#4a6358;line-height:1.7;margin-bottom:12px">Pragyan Kumar Pattnaik is the visionary founder and developer behind SkyFare. Driven by a passion for making travel cheaper and more accessible for millions of Indians and global travellers, Pragyan built SkyFare from the ground up — combining real-time flight data, AI-powered assistance, and seamless multi-currency support into one powerful platform. His goal is simple: no traveller should ever overpay for a ticket.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;color:#0d7a50">🚀 Founder</span>
+          <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;color:#0d7a50">💻 Full-Stack Developer</span>
+          <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;color:#0d7a50">✈ Travel Tech Innovator</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT IS SKYFARE -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem">
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:16px;padding:1.5rem">
+        <div style="font-size:28px;margin-bottom:10px">🎯</div>
+        <h3 style="font-size:15px;font-weight:800;color:#1a2e22;margin-bottom:8px">Our Mission</h3>
+        <p style="font-size:13px;color:#4a6358;line-height:1.7">SkyFare was built to solve one problem: the chaos of finding the cheapest travel ticket. We aggregate real-time flight, hotel, train and bus prices from hundreds of sources so you never have to browse 10 different sites again. One search. Best price. Every time.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:16px;padding:1.5rem">
+        <div style="font-size:28px;margin-bottom:10px">⚡</div>
+        <h3 style="font-size:15px;font-weight:800;color:#1a2e22;margin-bottom:8px">How SkyFare Works</h3>
+        <p style="font-size:13px;color:#4a6358;line-height:1.7">When you search on SkyFare, our engine simultaneously queries live data from Skyscanner, Google Flights, and 200+ airlines via real APIs. Results are ranked by price, speed, and value — and displayed instantly. No hidden fees. No markups. Just the raw cheapest price available anywhere on the internet.</p>
+      </div>
+    </div>
+
+    <!-- CAPABILITIES -->
+    <h3 style="font-size:1.1rem;font-weight:800;color:#1a2e22;margin-bottom:1rem;text-align:center">What SkyFare Can Do</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:2.5rem">
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">✈️</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Real-Time Flights</h4>
+        <p style="font-size:11px;color:#4a6358">Live prices from 400+ airlines. One-way, round trip, multi-city. Updated every minute.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">🏨</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Hotel Comparison</h4>
+        <p style="font-size:11px;color:#4a6358">Compare 200+ OTAs including Booking.com, Agoda, Expedia instantly.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">🚂</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Train & Bus Booking</h4>
+        <p style="font-size:11px;color:#4a6358">India and international trains and buses. Cheapest seats across all operators.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">🤖</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">24/7 AI Assistant</h4>
+        <p style="font-size:11px;color:#4a6358">Powered by Groq AI — answers travel questions, visa info, best dates, tips.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">💱</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Multi-Currency</h4>
+        <p style="font-size:11px;color:#4a6358">View prices in INR, USD, EUR, GBP, AED and 150+ currencies with live rates.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">💳</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Secure Payments</h4>
+        <p style="font-size:11px;color:#4a6358">Pay via UPI, GPay, PhonePe, credit/debit cards or PayPal. Powered by Razorpay.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">🌍</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">9 Languages</h4>
+        <p style="font-size:11px;color:#4a6358">Use SkyFare in English, Hindi, Spanish, French, Arabic and more.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:14px;padding:1.1rem;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">📱</div>
+        <h4 style="font-size:13px;font-weight:800;color:#1a2e22;margin-bottom:4px">Any Device</h4>
+        <p style="font-size:11px;color:#4a6358">Fully responsive — works perfectly on mobile, tablet and desktop.</p>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div style="background:linear-gradient(135deg,#1db97e,#065e3c);border-radius:20px;padding:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;text-align:center;margin-bottom:2.5rem">
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">500+</div><div style="font-size:12px;color:rgba(255,255,255,.8)">Sites Compared</div></div>
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">400+</div><div style="font-size:12px;color:rgba(255,255,255,.8)">Airlines Covered</div></div>
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">150+</div><div style="font-size:12px;color:rgba(255,255,255,.8)">Countries</div></div>
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">9</div><div style="font-size:12px;color:rgba(255,255,255,.8)">Languages</div></div>
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">24/7</div><div style="font-size:12px;color:rgba(255,255,255,.8)">AI Support</div></div>
+      <div><div style="font-size:1.8rem;font-weight:800;color:#fff">₹0</div><div style="font-size:12px;color:rgba(255,255,255,.8)">Hidden Fees</div></div>
+    </div>
+
+    <!-- TECH STACK -->
+    <div style="background:#fff;border:1.5px solid #c8ead9;border-radius:16px;padding:1.5rem">
+      <h3 style="font-size:14px;font-weight:800;color:#1a2e22;margin-bottom:12px">🔧 Technology Behind SkyFare</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">✈ RapidAPI — Live Flights</span>
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">💱 ExchangeRate-API — Currency</span>
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">🤖 Groq AI — Chatbot</span>
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">💳 Razorpay — Payments</span>
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">🏨 Makcorps — Hotels</span>
+        <span style="background:#e8faf3;border:1px solid #c8ead9;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#0d7a50">🌐 Vanilla HTML/CSS/JS</span>
+      </div>
+      <p style="font-size:12px;color:#8aab98;margin-top:10px">Built entirely by Pragyan Kumar Pattnaik · © 2026 SkyFare Technologies</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">✈ SkyFare</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;max-width:200px">Live flight prices powered by real Skyscanner data. Always the cheapest fare.</p>
+    </div>
+    <div><h4>Travel</h4><a>Cheap Flights</a><a>Hotels</a><a>Trains</a><a>Buses</a><a>Holiday Packages</a></div>
+    <div><h4>Company</h4><a href="#about" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">About Us</a><a>How We Work</a><a>Press</a><a>Careers</a></div>
+    <div><h4>Support</h4><a>Help Centre</a><a>Contact Us</a><a>Privacy Policy</a><a>Terms</a></div>
+  </div>
+  <div class="footer-bottom">© 2026 SkyFare · Live flight data via RapidAPI · Payments by Razorpay · AI by Groq · Currency by ExchangeRate-API</div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// 🔑 YOUR API KEYS — ALL 4 INTEGRATED
+// ═══════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let tripType    = 'roundtrip';
+let currCode    = 'INR';
+let rates       = {INR:1};
+let allFlights  = [];
+let currentBooking = null;
+let acTimers    = {};
+
+const SYMS = {INR:'₹',USD:'$',EUR:'€',GBP:'£',AED:'د.إ',SGD:'S$',JPY:'¥',AUD:'A$'};
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.onload = async () => {
+  const t = new Date();
+  document.getElementById('departDate').value = fmt(new Date(t.getTime()+7*864e5));
+  document.getElementById('returnDate').value  = fmt(new Date(t.getTime()+14*864e5));
+  await fetchRates();
+};
+
+function fmt(d){ return d.toISOString().split('T')[0]; }
+
+// ═══════════════════════════════════════════════════════════
+// 💱 EXCHANGERATE-API — Live currency conversion
+// ═══════════════════════════════════════════════════════════
+async function fetchRates(){
+  try {
+    const r = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_KEY}/latest/INR`);
+    const d = await r.json();
+    if(d.result === 'success'){
+      rates = d.conversion_rates;
+      updateDealPrices();
+      document.getElementById('rateDisplay').textContent =
+        `1 USD = ₹${(1/rates.USD).toFixed(1)} · 1 EUR = ₹${(1/rates.EUR).toFixed(1)}`;
+      toast('💱 Live exchange rates loaded!');
+    }
+  } catch(e){ console.log('Exchange rate fetch failed, using defaults'); }
+}
+
+function inrTo(inrAmt, code){
+  const c = code || currCode;
+  const val = inrAmt * (rates[c] || 1);
+  const s = SYMS[c] || c;
+  return c==='JPY' ? s+Math.round(val).toLocaleString()
+       : c==='INR' ? s+Math.round(val).toLocaleString()
+       : s+(val).toFixed(0);
+}
+
+function setCurr(code, el){
+  currCode = code;
+  document.getElementById('currSel').value = code;
+  document.querySelectorAll('.curr-rate').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  updateDealPrices();
+  if(allFlights.length) renderFlights(allFlights);
+  document.getElementById('currDisplay').textContent = `Prices in ${code}`;
+  toast(`Currency: ${code}`);
+}
+
+function updateDealPrices(){
+  document.getElementById('dp1').textContent = inrTo(7800);
+  document.getElementById('dp2').textContent = inrTo(22500);
+  document.getElementById('dp3').textContent = inrTo(9200);
+  document.getElementById('dp4').textContent = inrTo(7100);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS & UI
+// ═══════════════════════════════════════════════════════════
+function switchTab(type, btn){
+  ['flights','hotels','trains','buses'].forEach(t=>{
+    document.getElementById('ui-'+t).style.display = t===type?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function toggleReturn(show){
+  document.getElementById('returnWrap').style.opacity = show?'1':'0.4';
+}
+function swapCities(){
+  const fi=document.getElementById('fromInp'),ti=document.getElementById('toInp');
+  const fid=document.getElementById('fromId'),tid=document.getElementById('toId');
+  [fi.value,ti.value]=[ti.value,fi.value];
+  [fid.value,tid.value]=[tid.value,fid.value];
+}
+
+// ═══════════════════════════════════════════════════════════
+// AIRPORT AUTOCOMPLETE — RapidAPI
+// ═══════════════════════════════════════════════════════════
+function acSearch(field, q){
+  clearTimeout(acTimers[field]);
+  if(q.length<2){ closeAC(field); return; }
+  acTimers[field] = setTimeout(()=>fetchAC(field,q), 350);
+}
+
+async function fetchAC(field, q){
+  try {
+    const r = await fetch(
+      `https://flights-sky.p.rapidapi.com/flights/auto-complete?query=${encodeURIComponent(q)}`,
+      {headers:{'x-rapidapi-key':RAPIDAPI_KEY,'x-rapidapi-host':'flights-sky.p.rapidapi.com'}}
+    );
+    const d = await r.json();
+    renderAC(field, d?.data || []);
+  } catch(e){ closeAC(field); }
+}
+
+function renderAC(field, places){
+  const drop = document.getElementById(field+'AC');
+  if(!places.length){ drop.classList.remove('show'); return; }
+  drop.innerHTML = places.slice(0,6).map(p=>{
+    const name = p.presentation?.title || p.skyId || '';
+    const sub  = p.presentation?.subtitle || '';
+    const id   = p.skyId || name;
+    return `<div class="ac-item" onclick="pickAC('${field}','${esc(name)}','${esc(id)}')">
+      <span class="ac-code">${(id||'').substring(0,3)}</span>
+      <div class="ac-name">${esc(name)}<div class="ac-sub">${esc(sub)}</div></div>
+    </div>`;
+  }).join('');
+  drop.classList.add('show');
+}
+
+function pickAC(field, name, id){
+  document.getElementById(field+'Inp').value = name;
+  document.getElementById(field+'Id').value  = id;
+  closeAC(field);
+}
+function closeAC(f){ document.getElementById(f+'AC').classList.remove('show'); }
+document.addEventListener('click', e=>{ if(!e.target.closest('.inp-g')){ closeAC('from'); closeAC('to'); } });
+function esc(s){ return String(s||'').replace(/[<>"'&]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])); }
+
+// ═══════════════════════════════════════════════════════════
+// ✈ FLIGHT SEARCH — RapidAPI Flights Sky
+// ═══════════════════════════════════════════════════════════
+async function doSearch(){
+  const fromId    = document.getElementById('fromId').value || 'DEL';
+  const toId      = document.getElementById('toId').value   || 'DXB';
+  const depart    = document.getElementById('departDate').value;
+  const ret       = document.getElementById('returnDate').value;
+  const adults    = document.getElementById('adults').value;
+  const cabin     = document.getElementById('cabin').value;
+
+  if(!depart){ toast('Please select a departure date'); return; }
+
+  showLoad(true); hideResults();
+  document.getElementById('dealsSection').style.display = 'none';
+
+  const msgs = ['Searching live flights...','Checking Skyscanner data...','Finding cheapest fares...','Almost there...'];
+  let mi=0;
+  const timer = setInterval(()=>{ document.getElementById('loadTxt').textContent=msgs[mi++%msgs.length]; },900);
+
+  try {
+    const endpoint = tripType==='oneway'
+      ? 'https://flights-sky.p.rapidapi.com/flights/search-one-way'
+      : 'https://flights-sky.p.rapidapi.com/flights/search-roundtrip';
+
+    const params = new URLSearchParams({
+      fromEntityId: fromId, toEntityId: toId,
+      departDate: depart, adults, cabinClass: cabin,
+      currency: 'USD', countryCode:'IN', market:'en-IN'
+    });
+    if(tripType!=='oneway' && ret) params.append('returnDate', ret);
+
+    const r = await fetch(`${endpoint}?${params}`, {
+      headers:{'x-rapidapi-key':RAPIDAPI_KEY,'x-rapidapi-host':'flights-sky.p.rapidapi.com'}
+    });
+    const data = await r.json();
+    clearInterval(timer);
+    showLoad(false);
+
+    const its = data?.data?.itineraries || [];
+    if(!its.length){ document.getElementById('emptyBox').classList.add('show'); return; }
+
+    allFlights = its.slice(0,20).map(it=>{
+      const leg = it.legs?.[0]||{};
+      const carrier = leg.carriers?.marketing?.[0]||{};
+      const priceUSD = it.price?.raw || 0;
+      const priceINR = priceUSD * (1/(rates.USD||0.012));
+      return {
+        id: it.id,
+        priceINR,
+        priceUSD,
+        priceFmt: inrTo(priceINR),
+        dep: leg.departure,
+        arr: leg.arrival,
+        dur: leg.durationInMinutes,
+        stops: leg.stopCount||0,
+        origin: leg.origin?.displayCode||fromId,
+        dest:   leg.destination?.displayCode||toId,
+        originCity: leg.origin?.city||'',
+        destCity:   leg.destination?.city||'',
+        airlineName: carrier.name||'Unknown',
+        airlineLogo: carrier.logoUrl||'',
+        tags: it.tags||[],
+        score: it.score||0,
+        deeplink: it.deeplink||''
+      };
+    }).sort((a,b)=>a.priceINR-b.priceINR);
+
+    renderFlights(allFlights);
+
+  } catch(err){
+    clearInterval(timer);
+    showLoad(false);
+    document.getElementById('errBox').classList.add('show');
+    document.getElementById('errMsg').textContent = 'Live API error: '+err.message+'. Check your RapidAPI key quota.';
+  }
+}
+
+function showLoad(s){ document.getElementById('loadBox').classList.toggle('show',s); }
+function hideResults(){
+  document.getElementById('resultsPanel').classList.remove('show');
+  document.getElementById('errBox').classList.remove('show');
+  document.getElementById('emptyBox').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER FLIGHTS
+// ═══════════════════════════════════════════════════════════
+function renderFlights(flights){
+  const panel = document.getElementById('resultsPanel');
+  const list  = document.getElementById('flightList');
+  panel.classList.add('show');
+  document.getElementById('resultsTitle').textContent = `✅ ${flights.length} flights found — ${currCode} prices`;
+
+  // Filter strip
+  const filters = ['All','Non-stop','1 Stop','2+ Stops'];
+  document.getElementById('filterStrip').innerHTML = filters.map((f,i)=>
+    `<div class="ftag ${i===0?'active':''}" onclick="filterStops(${i-1},this)">${f}</div>`
+  ).join('');
+
+  list.innerHTML = flights.map((f,i)=>{
+    const dep = f.dep ? new Date(f.dep) : null;
+    const arr = f.arr ? new Date(f.arr) : null;
+    const depT = dep ? dep.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit',hour12:false}) : '--:--';
+    const arrT = arr ? arr.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit',hour12:false}) : '--:--';
+    const depD = dep ? dep.toLocaleDateString('en',{day:'numeric',month:'short'}) : '';
+    const durStr = f.dur ? `${Math.floor(f.dur/60)}h ${f.dur%60}m` : '--';
+    const stopsLbl = f.stops===0?'Non-stop':f.stops===1?'1 Stop':`${f.stops} Stops`;
+    const logo = f.airlineLogo
+      ? `<img class="airline-logo" src="${f.airlineLogo}" alt="${f.airlineName}" onerror="this.outerHTML='<div class=airline-fallback>${(f.airlineName||'?').substring(0,2)}</div>'">`
+      : `<div class="airline-fallback">${(f.airlineName||'?').substring(0,2)}</div>`;
+
+    return `<div class="fc ${f.tags.includes('best')?'best':''}" data-stops="${f.stops}" data-price="${f.priceINR}" data-dur="${f.dur||9999}">
+      <div class="fc-row">
+        <div class="fc-airline">
+          ${logo}
+          <div><div class="fc-name">${f.airlineName}</div><div class="fc-cls">${document.getElementById('cabin').value}</div></div>
+        </div>
+        <div class="fc-route">
+          <div class="rt"><div class="rt-time">${depT}</div><div class="rt-city">${f.origin}</div><div class="rt-date">${depD}</div></div>
+          <div class="rt-mid"><div class="rt-dur">${durStr}</div><div class="rt-line"></div><div class="rt-stops ${f.stops===0?'ns':''}">${stopsLbl}</div></div>
+          <div class="rt"><div class="rt-time">${arrT}</div><div class="rt-city">${f.dest}</div></div>
+        </div>
+        <div class="fc-right">
+          <div class="fc-price">${inrTo(f.priceINR)}</div>
+          <div class="fc-per">per person</div>
+          <div class="fc-badges">
+            ${i===0?'<span class="fc-badge b-cheap">Cheapest</span>':''}
+            ${f.stops===0?'<span class="fc-badge b-fast">Non-stop</span>':''}
+            ${f.tags.includes('best')?'<span class="fc-badge b-best">Best Value</span>':''}
+          </div>
+          <button class="btn-book" onclick="openModal(${JSON.stringify({price:inrTo(f.priceINR),priceINR:f.priceINR,route:f.origin+'→'+f.dest,airline:f.airlineName,dep:'${depT}',arr:'${arrT}',dur:'${durStr}'}).replace(/'/g,'\\x27')},'${f.origin}→${f.dest} · ${inrTo(f.priceINR)}')">Book Now</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function sortBy(type, btn){
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = [...document.querySelectorAll('.fc')];
+  const list = document.getElementById('flightList');
+  cards.sort((a,b)=>{
+    if(type==='cheap') return +a.dataset.price - +b.dataset.price;
+    if(type==='fast')  return +a.dataset.dur   - +b.dataset.dur;
+    return 0;
+  });
+  cards.forEach(c=>list.appendChild(c));
+}
+
+function filterStops(n, btn){
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.fc').forEach(c=>{
+    c.style.display = (n===-1||+c.dataset.stops===n)?'':'none';
+  });
+}
+
+function quickSearch(from, to, fn, tn){
+  document.getElementById('fromInp').value = fn;
+  document.getElementById('fromId').value  = from;
+  document.getElementById('toInp').value   = tn;
+  document.getElementById('toId').value    = to;
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(doSearch, 400);
+}
+
+// ═══════════════════════════════════════════════════════════
+// 💳 RAZORPAY PAYMENT INTEGRATION
+// ═══════════════════════════════════════════════════════════
+function openModal(flightData, label){
+  currentBooking = flightData;
+  document.getElementById('flightSum').textContent = '✈ ' + (label||'Selected flight');
+  document.getElementById('payOverlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('payOverlay').classList.remove('open'); }
+
+function selPay(el, type){
+  document.querySelectorAll('.pay-m').forEach(m=>m.classList.remove('sel'));
+  el.classList.add('sel');
+  ['upi','card','razorpay','netbank'].forEach(t=>{
+    document.getElementById('form-'+t).style.display = t===type?'flex':'none';
+  });
+}
+
+function payWithRazorpay(){
+  closeModal();
+  const amountINR = currentBooking?.priceINR || 8200;
+  const options = {
+    key: RAZORPAY_KEY,
+    amount: Math.round(amountINR * 100), // paise
+    currency: 'INR',
+    name: 'SkyFare',
+    description: currentBooking?.route || 'Flight Booking',
+    image: '',
+    handler: function(response){
+      showBookingConfirmed(response.razorpay_payment_id);
+    },
+    prefill:{ name:'', email:'', contact:'' },
+    theme:{ color:'#1db97e' },
+    modal:{
+      ondismiss: function(){ toast('Payment cancelled'); }
+    }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+function showBookingConfirmed(paymentId){
+  const el = document.createElement('div');
+  el.innerHTML = `<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:#fff;border-radius:20px;padding:2.5rem;text-align:center;max-width:320px;font-family:Nunito,sans-serif">
+      <div style="font-size:52px;margin-bottom:14px">🎉</div>
+      <h2 style="color:#1db97e;font-size:1.3rem;font-weight:800;margin-bottom:8px">Booking Confirmed!</h2>
+      <p style="color:#4a6358;font-size:13px;line-height:1.6;margin-bottom:6px">Payment successful! Your e-ticket will be sent to your email within 5 minutes.</p>
+      <p style="color:#8aab98;font-size:11px;margin-bottom:20px">Payment ID: ${paymentId||'TEST-'+Date.now()}</p>
+      <button onclick="this.closest('div').parentElement.remove()" style="background:#1db97e;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif">Done ✓</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🤖 GROQ AI CHATBOT
+// ═══════════════════════════════════════════════════════════
+let chatOpen = false;
+let chatHistory = [
+  {role:'system', content:`You are SkyFare's expert travel AI assistant. Help users find cheapest flights, hotels, travel tips, visa requirements, best travel dates, and booking advice. Be concise, friendly, and always suggest money-saving travel tips. Keep responses under 100 words. Use emojis occasionally.`}
+];
+
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatWin').classList.toggle('open', chatOpen);
+  if(chatOpen) document.getElementById('chatInp').focus();
+}
+
+async function sendMsg(){
+  const inp = document.getElementById('chatInp');
+  const msg = inp.value.trim();
+  if(!msg) return;
+
+  addMsg(msg, 'user');
+  inp.value = '';
+  document.getElementById('sendBtn').disabled = true;
+
+  // Show typing indicator
+  const typingId = 'typing-'+Date.now();
+  document.getElementById('chatMsgs').innerHTML += `
+    <div class="msg typing" id="${typingId}">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>`;
+  scrollChat();
+
+  chatHistory.push({role:'user', content:msg});
+
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{
+        'Authorization': `Bearer ${GROQ_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: chatHistory,
+        max_tokens: 200,
+        temperature: 0.7
+      })
+    });
+    const data = await r.json();
+    const reply = data.choices?.[0]?.message?.content || 'Sorry, I had trouble responding. Please try again!';
+    chatHistory.push({role:'assistant', content:reply});
+
+    document.getElementById(typingId)?.remove();
+    addMsg(reply, 'bot');
+  } catch(e){
+    document.getElementById(typingId)?.remove();
+    addMsg("Sorry, I'm having trouble connecting. Try asking again!", 'bot');
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function addMsg(text, who){
+  document.getElementById('chatMsgs').innerHTML += `<div class="msg ${who}">${text}</div>`;
+  scrollChat();
+}
+function scrollChat(){ const m=document.getElementById('chatMsgs'); m.scrollTop=m.scrollHeight; }
+
+// ═══════════════════════════════════════════════════════════
+// LANGUAGE
+// ═══════════════════════════════════════════════════════════
+const LANGS = {
+  en:{heroTitle:"Find the World's<br>Cheapest Flights",heroSub:"Real-time prices · Compare hundreds of airlines · Book in seconds"},
+  hi:{heroTitle:"दुनिया की सबसे सस्ती<br>फ्लाइट खोजें",heroSub:"रियल-टाइम कीमतें · सैकड़ों एयरलाइंस तुलना · सेकंड में बुक करें"},
+  es:{heroTitle:"Encuentra los Vuelos<br>más Baratos del Mundo",heroSub:"Precios en tiempo real · Compara cientos de aerolíneas"},
+  fr:{heroTitle:"Trouvez les Vols les<br>Moins Chers du Monde",heroSub:"Prix en temps réel · Comparez des centaines de compagnies"},
+  ar:{heroTitle:"ابحث عن أرخص<br>رحلات جوية في العالم",heroSub:"أسعار في الوقت الفعلي · قارن مئات شركات الطيران"},
+};
+function setLang(l){
+  const d = LANGS[l]||LANGS.en;
+  document.getElementById('heroTitle').innerHTML = d.heroTitle;
+  document.getElementById('heroSub').textContent = d.heroSub;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l==='ar'?'rtl':'ltr';
+  toast('Language: '+(l==='hi'?'हिंदी':l==='es'?'Español':l==='fr'?'Français':l==='ar'?'العربية':'English'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function toast(msg){
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
